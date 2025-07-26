@@ -14,6 +14,10 @@ kubectl get pods -n kserve
 kubectl get pods -n kserve-ci-e2e-test
 echo "::endgroup::"
 
+echo "::group::Check KServe validating webhooks"
+kubectl get validatingwebhookconfiguration -n kserve -o yaml
+echo "::endgroup::"
+
 echo "::group::List Pods in all other namespaces"
 kubectl get pods -A --field-selector=metadata.namespace!=kserve,metadata.namespace!=kserve-ci-e2e-test
 echo "::endgroup::"

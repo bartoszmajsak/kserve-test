@@ -92,7 +92,7 @@ jobs:
       - name: Install KServe
         run: |
           ./test/scripts/gh-actions/setup-kserve.sh "raw" "istio-gatewayapi-ext"
-
+          
       - name: Run E2E tests
         timeout-minutes: 30
         run: |
