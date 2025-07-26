@@ -81,29 +81,7 @@ replacements:
     options:
       delimiter: '.'
       index: 1
-  # CA injection annotations for all webhook configurations
-  - select:
-      kind: CustomResourceDefinition
-      name: inferenceservices.serving.kserve.io
-    fieldPaths:
-    - metadata.annotations.[cert-manager.io/inject-ca-from]
-    options:
-      delimiter: '/'
-      index: 0
-  - select:
-      kind: MutatingWebhookConfiguration
-    fieldPaths:
-    - metadata.annotations.[cert-manager.io/inject-ca-from]
-    options:
-      delimiter: '/'
-      index: 0
-  - select:
-      kind: ValidatingWebhookConfiguration
-    fieldPaths:
-    - metadata.annotations.[cert-manager.io/inject-ca-from]
-    options:
-      delimiter: '/'
-      index: 0
+  # CA injection annotations are handled by patches
 
 # Protect the /metrics endpoint by putting it behind auth.
 # Only one of manager_auth_proxy_patch.yaml and
