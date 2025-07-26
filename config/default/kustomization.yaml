@@ -17,10 +17,9 @@ resources:
 - ../rbac
 - ../manager
 - ../webhook
-# - ../certmanager # not needed, because ODH is using OpenShift's serving certificates for WebHooks
-# - ../localmodels # This is commented out for 2.16
-# - ../localmodelnodes
-- network-policies.yaml # ODH specific
+- ../certmanager
+- ../localmodels
+- ../localmodelnodes
 - ../llmisvc
 
 generatorOptions:
@@ -43,39 +42,18 @@ replacements:
       kind: ValidatingWebhookConfiguration
     fieldPaths:
     - webhooks.*.clientConfig.service.name
+  # Certificate service name
   - select:
-      kind: ValidatingWebhookConfiguration
-      name: trainedmodel.serving.kserve.io
-  - fieldPaths:
-    - webhooks.*.clientConfig.service.name
-    select:
-      kind: ValidatingWebhookConfiguration
-      name: inferencegraph.serving.kserve.io
-#  - fieldPaths:
-#    - webhooks.*.clientConfig.service.name
-#    select:
-#      kind: ValidatingWebhookConfiguration
-#      name: clusterservingruntime.serving.kserve.io
-  - fieldPaths:
-    - webhooks.*.clientConfig.service.name
-    select:
-      kind: ValidatingWebhookConfiguration
-      name: servingruntime.serving.kserve.io
-  - fieldPaths:
-      - webhooks.*.clientConfig.service.name
-    select:
-      kind: ValidatingWebhookConfiguration
-      name: localmodelcache.serving.kserve.io
-  - fieldPaths:
+      kind: Certificate
+      name: serving-cert
+      namespace: kserve
+    fieldPaths:
     - spec.commonName
     - spec.dnsNames.0
     options:
       delimiter: '.'
       index: 0
-    select:
-      kind: Certificate
-      name: serving-cert
-      namespace: kserve      
+
 # Replace webhook service namespace and CA injection
 - source:
     fieldPath: metadata.namespace
@@ -92,24 +70,40 @@ replacements:
       kind: ValidatingWebhookConfiguration
     fieldPaths:
     - webhooks.*.clientConfig.service.namespace
+  # Certificate namespace
+  - select:
+      kind: Certificate
+      name: serving-cert
+      namespace: kserve
+    fieldPaths:
+    - spec.commonName
+    - spec.dnsNames.0
+    options:
+      delimiter: '.'
+      index: 1
+  # CA injection annotations for all webhook configurations
+  - select:
+      kind: CustomResourceDefinition
+      name: inferenceservices.serving.kserve.io
+    fieldPaths:
+    - metadata.annotations.[cert-manager.io/inject-ca-from]
+    options:
+      delimiter: '/'
+      index: 0
+  - select:
+      kind: MutatingWebhookConfiguration
+    fieldPaths:
+    - metadata.annotations.[cert-manager.io/inject-ca-from]
+    options:
+      delimiter: '/'
+      index: 0
   - select:
       kind: ValidatingWebhookConfiguration
-      name: trainedmodel.serving.kserve.io
-  - fieldPaths:
-    - webhooks.*.clientConfig.service.namespace
-    select:
-      kind: ValidatingWebhookConfiguration
-      name: inferencegraph.serving.kserve.io
-#  - fieldPaths:
-#    - webhooks.*.clientConfig.service.namespace
-#    select:
-#      kind: ValidatingWebhookConfiguration
-#      name: clusterservingruntime.serving.kserve.io
-  - fieldPaths:
-    - webhooks.*.clientConfig.service.namespace
-    select:
-      kind: ValidatingWebhookConfiguration
-      name: servingruntime.serving.kserve.io
+    fieldPaths:
+    - metadata.annotations.[cert-manager.io/inject-ca-from]
+    options:
+      delimiter: '/'
+      index: 0
 
 # Protect the /metrics endpoint by putting it behind auth.
 # Only one of manager_auth_proxy_patch.yaml and

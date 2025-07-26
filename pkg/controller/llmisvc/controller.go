@@ -184,7 +184,7 @@ func (r *LLMInferenceServiceReconciler) reconcile(ctx context.Context, llmSvc *v
 		return fmt.Errorf("failed to combine base-configurations: %w", err)
 	}
 	llmSvc.MarkPresetsCombinedReady()
-	// We are only writing to status, so we can safely use the original object.
+
 	llmSvc.Spec = baseCfg.Spec
 
 	logger.Info("Reconciling with combined base configurations", "spec", llmSvc.Spec)
