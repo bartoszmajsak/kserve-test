@@ -31,19 +31,25 @@ ENV VIRTUAL_ENV=${VENV_PATH}
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+# Copy dependency files first for better caching
 COPY kserve/pyproject.toml kserve/poetry.lock kserve/
-RUN cd kserve && poetry install --no-root --no-interaction --no-cache --extras "storage"
-COPY kserve kserve
+
+# Install all dependencies in a single poetry install step
 RUN cd kserve && poetry install --no-interaction --no-cache --extras "storage"
 
+# Install additional pip dependencies
 RUN pip install --no-cache-dir krbcontext==0.10 hdfs~=2.6.0 requests-kerberos==0.14.0
 
-# Generate third-party licenses
+# Copy source code after dependencies are installed
+COPY kserve kserve
+
+# Generate third-party licenses - copy license generation files first for better caching
 COPY pyproject.toml pyproject.toml
 COPY third_party/pip-licenses.py pip-licenses.py
 # TODO: Remove this when upgrading to python 3.11+
-RUN pip install --no-cache-dir tomli
-RUN mkdir -p third_party/library && python3 pip-licenses.py
+RUN pip install --no-cache-dir tomli && \
+    mkdir -p third_party/library && \
+    python3 pip-licenses.py
 
 ## Runtime
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest AS prod
@@ -53,22 +59,25 @@ ARG VENV_PATH
 ENV VIRTUAL_ENV=${VENV_PATH}
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+# Combine package installation and user creation
 RUN microdnf install -y --setopt=ubi-9-appstream-rpms.module_hotfixes=1 --disablerepo=* \
     --enablerepo=ubi-9-baseos-rpms --enablerepo=ubi-9-appstream-rpms shadow-utils python3.11 python3.11-devel \
-    && microdnf clean all \
-    &&  alternatives --install /usr/bin/python python3 /usr/bin/python3.11 1
-RUN useradd kserve -m -u 1000 -d /home/kserve
+    && alternatives --install /usr/bin/python python3 /usr/bin/python3.11 1 \
+    && useradd kserve -m -u 1000 -d /home/kserve \
+    && microdnf clean all
 
 COPY --from=builder --chown=kserve:kserve third_party third_party
 COPY --from=builder --chown=kserve:kserve $VIRTUAL_ENV $VIRTUAL_ENV
 COPY --from=builder kserve kserve
 COPY ./storage-initializer /storage-initializer
 
-RUN chmod +x /storage-initializer/scripts/initializer-entrypoint
-RUN mkdir /work
+# Combine filesystem operations
+RUN chmod +x /storage-initializer/scripts/initializer-entrypoint && \
+    mkdir /work && \
+    chown -R kserve:kserve /mnt
+
 WORKDIR /work
 
 # Set a writable /mnt folder to avoid permission issue on Huggingface download. See https://huggingface.co/docs/hub/spaces-sdks-docker#permissions
-RUN chown -R kserve:kserve /mnt
 USER 1000
 ENTRYPOINT ["/storage-initializer/scripts/initializer-entrypoint"]
