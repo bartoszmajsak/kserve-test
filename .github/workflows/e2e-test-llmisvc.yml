@@ -123,8 +123,9 @@ jobs:
             dockerfile: agent.Dockerfile
           - name: router
             dockerfile: router.Dockerfile
-#          - name: storage-init
-#            dockerfile: python/storage-initializer.Dockerfile
+          - name: storage-init
+            dockerfile: python/storage-initializer.Dockerfile
+            context: python
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -145,7 +146,7 @@ jobs:
       - name: Build & push ${{ matrix.image.name }}
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ${{ matrix.image.context || '.' }}
           file: ${{ matrix.image.dockerfile }}
           push: true
           tags: ghcr.io/${{ github.repository }}/kserve-${{ matrix.image.name }}:${{ github.sha }}
