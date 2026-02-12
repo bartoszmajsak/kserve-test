@@ -126,7 +126,7 @@ jobs:
           file: python/huggingface_server_cpu.Dockerfile
           tags: ${{ env.GHCR_REPO }}/huggingfaceserver:${{ env.TAG }}
           cache-from: type=gha,scope=huggingfaceserver
-          cache-to: type=gha,mode=max,scope=huggingfaceserver
+          cache-to: type=gha,mode=min,scope=huggingfaceserver
 
   explainer-runtime-build:
     runs-on: ubuntu-latest
