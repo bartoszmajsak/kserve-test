@@ -202,7 +202,10 @@ jobs:
       - name: Pull predictor runtime images
         run: |
           for img in sklearnserver xgbserver lgbserver pmmlserver paddleserver custom-model-grpc custom-image-transformer-grpc huggingfaceserver image-transformer; do
-            docker pull "${GHCR_REPO}/${img}:${TAG}"
+            docker pull "${GHCR_REPO}/${img}:${TAG}" &
+          done
+          wait
+          for img in sklearnserver xgbserver lgbserver pmmlserver paddleserver custom-model-grpc custom-image-transformer-grpc huggingfaceserver image-transformer; do
             docker tag "${GHCR_REPO}/${img}:${TAG}" "kserve/${img}:${TAG}"
           done
           docker image ls
@@ -238,7 +241,10 @@ jobs:
       - name: Pull runtime images
         run: |
           for img in sklearnserver xgbserver custom-model-grpc custom-image-transformer-grpc image-transformer art-explainer; do
-            docker pull "${GHCR_REPO}/${img}:${TAG}"
+            docker pull "${GHCR_REPO}/${img}:${TAG}" &
+          done
+          wait
+          for img in sklearnserver xgbserver custom-model-grpc custom-image-transformer-grpc image-transformer art-explainer; do
             docker tag "${GHCR_REPO}/${img}:${TAG}" "kserve/${img}:${TAG}"
           done
           docker image ls
@@ -279,7 +285,10 @@ jobs:
       - name: Pull runtime images
         run: |
           for img in sklearnserver xgbserver success-200-isvc error-404-isvc; do
-            docker pull "${GHCR_REPO}/${img}:${TAG}"
+            docker pull "${GHCR_REPO}/${img}:${TAG}" &
+          done
+          wait
+          for img in sklearnserver xgbserver success-200-isvc error-404-isvc; do
             docker tag "${GHCR_REPO}/${img}:${TAG}" "kserve/${img}:${TAG}"
           done
           docker image ls
@@ -315,7 +324,10 @@ jobs:
       - name: Pull runtime images
         run: |
           for img in sklearnserver xgbserver lgbserver image-transformer art-explainer; do
-            docker pull "${GHCR_REPO}/${img}:${TAG}"
+            docker pull "${GHCR_REPO}/${img}:${TAG}" &
+          done
+          wait
+          for img in sklearnserver xgbserver lgbserver image-transformer art-explainer; do
             docker tag "${GHCR_REPO}/${img}:${TAG}" "kserve/${img}:${TAG}"
           done
           docker image ls
@@ -436,7 +448,10 @@ jobs:
       - name: Pull runtime images
         run: |
           for img in sklearnserver xgbserver custom-model-grpc custom-image-transformer-grpc image-transformer art-explainer; do
-            docker pull "${GHCR_REPO}/${img}:${TAG}"
+            docker pull "${GHCR_REPO}/${img}:${TAG}" &
+          done
+          wait
+          for img in sklearnserver xgbserver custom-model-grpc custom-image-transformer-grpc image-transformer art-explainer; do
             docker tag "${GHCR_REPO}/${img}:${TAG}" "kserve/${img}:${TAG}"
           done
           docker image ls
@@ -543,7 +558,10 @@ jobs:
       - name: Pull runtime images
         run: |
           for img in sklearnserver xgbserver success-200-isvc error-404-isvc; do
-            docker pull "${GHCR_REPO}/${img}:${TAG}"
+            docker pull "${GHCR_REPO}/${img}:${TAG}" &
+          done
+          wait
+          for img in sklearnserver xgbserver success-200-isvc error-404-isvc; do
             docker tag "${GHCR_REPO}/${img}:${TAG}" "kserve/${img}:${TAG}"
           done
           docker image ls

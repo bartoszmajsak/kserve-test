@@ -14,7 +14,10 @@ runs:
       shell: bash
       run: |
         for img in ${{ inputs.images }}; do
-          docker pull "${GHCR_REPO}/${img}:${TAG}"
+          docker pull "${GHCR_REPO}/${img}:${TAG}" &
+        done
+        wait
+        for img in ${{ inputs.images }}; do
           docker tag "${GHCR_REPO}/${img}:${TAG}" "kserve/${img}:${TAG}"
         done
         docker image ls
