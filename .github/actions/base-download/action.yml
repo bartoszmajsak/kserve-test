@@ -1,17 +1,20 @@
 name: 'Base Download Actions'
-description: 'A wrapper around download docker artifact to download a set of base images'
+description: 'Pulls KServe images from GHCR and tags them for local use'
+
+inputs:
+  images:
+    description: 'Space-separated list of image names to pull from GHCR'
+    required: false
+    default: 'kserve-controller kserve-localmodel-controller kserve-localmodelnode-agent agent router storage-initializer'
 
 runs:
   using: "composite"
   steps:
-    - name: Download base artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: ./tmp
-        pattern: ${{ env.BASE_ARTIFACT_PREFIX }}-*
-        merge-multiple: true
-
-    - name: Load base images
-      uses: ./.github/actions/load-docker-images
-      with:
-        directory: ./tmp
+    - name: Pull and tag images from GHCR
+      shell: bash
+      run: |
+        for img in ${{ inputs.images }}; do
+          docker pull "${GHCR_REPO}/${img}:${TAG}"
+          docker tag "${GHCR_REPO}/${img}:${TAG}" "kserve/${img}:${TAG}"
+        done
+        docker image ls
