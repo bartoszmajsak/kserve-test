@@ -228,7 +228,7 @@ jobs:
         run: |
           ./test/scripts/gh-actions/status-check.sh
 
-  test-transformer-explainer-mms:
+  test-transformer-mms:
     runs-on: ubuntu-latest
     needs:
       [kserve-image-build, predictor-runtime-build, explainer-runtime-build]
@@ -262,7 +262,38 @@ jobs:
         run: |
           ./test/scripts/gh-actions/run-e2e-tests.sh "transformer or mms or collocation" "6"
 
-      - name: Run E2E tests - explainer
+      - name: Check system status
+        if: always()
+        run: |
+          ./test/scripts/gh-actions/status-check.sh
+
+  test-explainer:
+    runs-on: ubuntu-latest
+    needs: [kserve-image-build, predictor-runtime-build, explainer-runtime-build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/e2e-test-setup
+
+      - name: Pull base images
+        uses: ./.github/actions/base-download
+
+      - name: Pull runtime images
+        run: |
+          for img in sklearnserver art-explainer; do
+            docker pull "${GHCR_REPO}/${img}:${TAG}" &
+          done
+          wait
+          for img in sklearnserver art-explainer; do
+            docker tag "${GHCR_REPO}/${img}:${TAG}" "kserve/${img}:${TAG}"
+          done
+
+      - name: Install KServe
+        run: |
+          ./test/scripts/gh-actions/setup-kserve.sh
+          kubectl get pods -n kserve
+          kubectl describe pods -n kserve
+
+      - name: Run explainer E2E tests
         timeout-minutes: 30
         run: |
           ./test/scripts/gh-actions/run-e2e-tests.sh "explainer" "1"
