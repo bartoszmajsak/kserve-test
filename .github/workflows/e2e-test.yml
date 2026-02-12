@@ -43,6 +43,7 @@ jobs:
           - { name: agent, dockerfile: agent.Dockerfile, context: "." }
           - { name: router, dockerfile: router.Dockerfile, context: "." }
           - { name: storage-initializer, dockerfile: python/storage-initializer.Dockerfile, context: python }
+          - { name: qpext, dockerfile: qpext/qpext.Dockerfile, context: "." }
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/free-up-disk-space
@@ -366,15 +367,15 @@ jobs:
       - name: Pull base images
         uses: ./.github/actions/base-download
 
-      - name: Build queue proxy extension image
+      - name: Pull qpext and sklearn server images
         run: |
-          ./test/scripts/gh-actions/build-qpext-image.sh
-          docker image ls
-
-      - name: Pull sklearn server image
-        run: |
-          docker pull "${GHCR_REPO}/sklearnserver:${TAG}"
-          docker tag "${GHCR_REPO}/sklearnserver:${TAG}" "kserve/sklearnserver:${TAG}"
+          for img in qpext sklearnserver; do
+            docker pull "${GHCR_REPO}/${img}:${TAG}" &
+          done
+          wait
+          for img in qpext sklearnserver; do
+            docker tag "${GHCR_REPO}/${img}:${TAG}" "kserve/${img}:${TAG}"
+          done
           docker image ls
 
       - name: Install KServe

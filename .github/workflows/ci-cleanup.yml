@@ -30,6 +30,7 @@ env:
     success-200-isvc
     error-404-isvc
     llmisvc-controller
+    qpext
 
 jobs:
   cleanup-gha-cache:
