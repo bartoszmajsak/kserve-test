@@ -48,28 +48,21 @@ jobs:
   cleanup-ghcr-images:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete GHCR images tagged with PR commit SHAs
+      - name: Delete GHCR images tagged with PR number
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_TAG: pr-${{ github.event.pull_request.number }}
         run: |
           ORG="${GITHUB_REPOSITORY_OWNER}"
-          # Collect all commit SHAs from this PR
-          SHAS=$(gh api --paginate \
-            "repos/${GITHUB_REPOSITORY}/pulls/${{ github.event.pull_request.number }}/commits" \
-            --jq '.[].sha')
 
           for img in ${CI_IMAGES}; do
             PACKAGE="${GITHUB_REPOSITORY#*/}/${img}"
-            echo "Cleaning ${PACKAGE}..."
-            for sha in ${SHAS}; do
-              # Find version ID for this tag and delete it
-              VERSION_ID=$(gh api \
-                "orgs/${ORG}/packages/container/${PACKAGE}/versions" \
-                --jq ".[] | select(.metadata.container.tags[] == \"${sha}\") | .id" 2>/dev/null) || true
-              if [ -n "${VERSION_ID}" ]; then
-                echo "  Deleting ${img}:${sha} (version ${VERSION_ID})"
-                gh api --method DELETE \
-                  "orgs/${ORG}/packages/container/${PACKAGE}/versions/${VERSION_ID}" || true
-              fi
-            done
+            VERSION_ID=$(gh api \
+              "orgs/${ORG}/packages/container/${PACKAGE}/versions" \
+              --jq ".[] | select(.metadata.container.tags[] == \"${PR_TAG}\") | .id" 2>/dev/null) || true
+            if [ -n "${VERSION_ID}" ]; then
+              echo "Deleting ${img}:${PR_TAG} (version ${VERSION_ID})"
+              gh api --method DELETE \
+                "orgs/${ORG}/packages/container/${PACKAGE}/versions/${VERSION_ID}" || true
+            fi
           done
