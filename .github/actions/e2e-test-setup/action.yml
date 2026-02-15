@@ -51,6 +51,7 @@ runs:
         go-version-file: go.mod
 
     - name: Setup Python
+      id: setup-python
       uses: actions/setup-python@v5
       with:
         python-version: "3.10"
@@ -60,7 +61,7 @@ runs:
       id: python-test-cache
       with:
         path: python/kserve/.venv
-        key: python-test-venv-${{ runner.os }}-${{ hashFiles('python/kserve/uv.lock') }}
+        key: python-test-venv-${{ runner.os }}-py${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('python/kserve/uv.lock') }}
 
     - name: Setup Minikube
       uses: ./.github/actions/minikube-setup
