@@ -81,7 +81,7 @@ jobs:
       - name: Pull llmisvc-controller from GHCR
         run: |
           docker pull "${GHCR_REPO}/llmisvc-controller:${TAG}"
-          minikube image load "${GHCR_REPO}/llmisvc-controller:${TAG}"
+          docker tag "${GHCR_REPO}/llmisvc-controller:${TAG}" "kserve/llmisvc-controller:${TAG}"
 
       - name: KServe dependency setup
         uses: ./.github/actions/kserve-dep-setup
