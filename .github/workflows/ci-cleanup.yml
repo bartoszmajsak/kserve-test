@@ -1,0 +1,69 @@
+name: CI Cleanup
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  actions: write
+  packages: write
+
+env:
+  # All images pushed to GHCR during E2E CI (must match e2e-test.yml matrix entries)
+  CI_IMAGES: >-
+    kserve-controller
+    kserve-localmodel-controller
+    kserve-localmodelnode-agent
+    agent
+    router
+    storage-initializer
+    sklearnserver
+    xgbserver
+    lgbserver
+    pmmlserver
+    paddleserver
+    custom-model-grpc
+    custom-image-transformer-grpc
+    huggingfaceserver
+    image-transformer
+    art-explainer
+    success-200-isvc
+    error-404-isvc
+    llmisvc-controller
+    qpext
+
+jobs:
+  cleanup-gha-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete GHA build caches for PR branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          BRANCH: refs/pull/${{ github.event.pull_request.number }}/merge
+        run: |
+          echo "Deleting GHA caches for: ${BRANCH}"
+          gh cache list --ref "${BRANCH}" --json id --jq '.[].id' |
+            xargs -r -I {} gh cache delete {} || true
+
+  cleanup-ghcr-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete GHCR images tagged with PR number
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_TAG: pr-${{ github.event.pull_request.number }}
+        run: |
+          ORG="${GITHUB_REPOSITORY_OWNER}"
+
+          for img in ${CI_IMAGES}; do
+            PACKAGE="${GITHUB_REPOSITORY#*/}/${img}"
+            VERSION_ID=$(gh api \
+              "orgs/${ORG}/packages/container/${PACKAGE}/versions" \
+              --jq ".[] | select(.metadata.container.tags[] == \"${PR_TAG}\") | .id" 2>/dev/null) || true
+            if [ -n "${VERSION_ID}" ]; then
+              echo "Deleting ${img}:${PR_TAG} (version ${VERSION_ID})"
+              gh api --method DELETE \
+                "orgs/${ORG}/packages/container/${PACKAGE}/versions/${VERSION_ID}" || true
+            fi
+          done
