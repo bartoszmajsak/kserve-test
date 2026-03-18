@@ -26,12 +26,37 @@ runs:
         done
         docker image ls
 
-    # Artifact mode: download tars and parallel load
+    # Artifact mode: compute precise pattern, download only needed artifacts, and load
+    - name: Compute artifact pattern
+      id: artifacts
+      if: inputs.transport == 'artifact'
+      shell: bash
+      run: |
+        # Map image names to their artifact names based on which build job produced them.
+        # kserve-image-build  -> base-<name>
+        # graph-tests-build   -> graph-<name>
+        # all other builds    -> runtime-<name>
+        NAMES=""
+        for img in ${{ inputs.images }}; do
+          case "$img" in
+            kserve-controller|kserve-localmodel-controller|kserve-localmodelnode-agent|agent|router|storage-initializer|qpext)
+              NAMES="${NAMES:+$NAMES,}base-$img"
+              ;;
+            success-200-isvc|error-404-isvc)
+              NAMES="${NAMES:+$NAMES,}graph-$img"
+              ;;
+            *)
+              NAMES="${NAMES:+$NAMES,}runtime-$img"
+              ;;
+          esac
+        done
+        echo "pattern={$NAMES}" >> $GITHUB_OUTPUT
+
     - name: Download image artifacts
       if: inputs.transport == 'artifact'
       uses: actions/download-artifact@v4
       with:
-        pattern: '{base-*,runtime-*,graph-*}'
+        pattern: ${{ steps.artifacts.outputs.pattern }}
         path: /tmp/images
         merge-multiple: true
 

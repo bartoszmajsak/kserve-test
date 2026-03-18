@@ -717,8 +717,7 @@ jobs:
 
   test-autoscaling:
     runs-on: ubuntu-latest
-    needs:
-      [detect-changes, kserve-image-build, predictor-runtime-build, explainer-runtime-build]
+    needs: [detect-changes, kserve-image-build, predictor-runtime-build]
     strategy:
       fail-fast: false
       matrix:
@@ -820,7 +819,7 @@ jobs:
         uses: ./.github/actions/load-test-images
         with:
           transport: ${{ needs.detect-changes.outputs.use_ghcr == 'true' && 'ghcr' || 'artifact' }}
-          images: 'kserve-controller kserve-localmodel-controller kserve-localmodelnode-agent agent router storage-initializer huggingfaceserver predictiveserver'
+          images: 'kserve-controller kserve-localmodel-controller kserve-localmodelnode-agent agent router storage-initializer huggingfaceserver'
 
       - name: Install KServe
         run: |
@@ -856,7 +855,7 @@ jobs:
         uses: ./.github/actions/load-test-images
         with:
           transport: ${{ needs.detect-changes.outputs.use_ghcr == 'true' && 'ghcr' || 'artifact' }}
-          images: 'kserve-controller kserve-localmodel-controller kserve-localmodelnode-agent agent router storage-initializer huggingfaceserver predictiveserver'
+          images: 'kserve-controller kserve-localmodel-controller kserve-localmodelnode-agent agent router storage-initializer huggingfaceserver'
 
       - name: Install KServe
         run: |
