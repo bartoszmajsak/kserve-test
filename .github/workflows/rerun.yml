@@ -4,67 +4,11 @@ on:
   issue_comment:
     types: [created]
 
-permissions:
-  actions: write
-  pull-requests: read
-
 jobs:
   rerun:
     name: rerun
-    if: >-
-      github.event.issue.pull_request != '' &&
-      (contains(github.event.comment.body, '/rerun-all') ||
-       contains(github.event.comment.body, '/rerun-failed') ||
-       contains(github.event.comment.body, '/rerun-workflow ')) &&
-      (github.event.comment.author_association == 'OWNER' ||
-       github.event.comment.author_association == 'COLLABORATOR' ||
-       github.event.comment.author_association == 'CONTRIBUTOR' ||
-       github.event.comment.author_association == 'MEMBER')
+    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/rerun-failed')
     runs-on: ubuntu-latest
     steps:
-      - name: Rerun workflows
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.issue.number }}
-          COMMENT_BODY: ${{ github.event.comment.body }}
-        run: |
-          HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid -q .headRefOid)
-
-          rerun_workflow() {
-            local run_id=$1 mode=$2
-            local name
-            name=$(gh run view "$run_id" --json name -q .name)
-            echo "Rerunning ${mode:-all} jobs in '${name}' (run ${run_id})..."
-            gh run rerun "$run_id" ${mode} || echo "  -> Failed to rerun ${run_id}"
-          }
-
-          # Find completed+failed workflow runs for this PR's head SHA
-          RUNS=$(gh api "repos/${GH_REPO}/actions/runs" \
-            --jq "[.workflow_runs[] | select(.head_sha == \"${HEAD_SHA}\" and .status == \"completed\" and .conclusion == \"failure\")] | .[].id" 2>/dev/null)
-
-          if [ -z "$RUNS" ]; then
-            echo "No failed workflow runs found for PR #${PR_NUMBER} (SHA: ${HEAD_SHA})"
-            exit 0
-          fi
-
-          # Parse the command from the comment
-          # COMMENT_BODY is set via env (not ${{ }} interpolation) to prevent injection
-          if echo "$COMMENT_BODY" | grep -q '/rerun-failed'; then
-            MODE="--failed"
-          elif echo "$COMMENT_BODY" | grep -q '/rerun-workflow'; then
-            TARGET_WORKFLOW=$(echo "$COMMENT_BODY" | grep -oP '/rerun-workflow\s+\K\S+')
-            MODE=""
-          else
-            MODE=""
-          fi
-
-          for RUN_ID in $RUNS; do
-            if [ -n "${TARGET_WORKFLOW:-}" ]; then
-              WORKFLOW_NAME=$(gh run view "$RUN_ID" --json name -q .name)
-              if [ "$WORKFLOW_NAME" != "$TARGET_WORKFLOW" ]; then
-                continue
-              fi
-            fi
-            rerun_workflow "$RUN_ID" "$MODE"
-          done
+      - name: Debug
+        run: echo "Workflow triggered!"
