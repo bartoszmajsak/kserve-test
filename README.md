@@ -79,3 +79,4 @@ Thanks to all of our amazing contributors!
 <a href="https://github.com/kserve/kserve/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=kserve/kserve" />
 </a>
+# test trigger
