@@ -29,6 +29,7 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
           HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid -q .headRefOid)
+          echo "PR #${PR_NUMBER} HEAD SHA: ${HEAD_SHA}"
 
           rerun_workflow() {
             local run_id=$1 mode=$2
@@ -46,19 +47,25 @@ jobs:
             exit 0
           fi
 
+          echo "Found failed runs: $(echo $RUNS | tr '\n' ' ')"
+
           if echo "$COMMENT_BODY" | grep -q '/rerun-failed'; then
             MODE="--failed"
+            echo "Mode: rerun failed jobs only"
           elif echo "$COMMENT_BODY" | grep -q '/rerun-workflow'; then
-            TARGET_WORKFLOW=$(echo "$COMMENT_BODY" | grep -oP '/rerun-workflow\s+\K\S+')
+            TARGET_WORKFLOW=$(echo "$COMMENT_BODY" | sed -n 's|.*/rerun-workflow \(.*\)|\1|p' | sed 's/[[:space:]]*$//')
             MODE=""
+            echo "Mode: rerun workflow '${TARGET_WORKFLOW}'"
           else
             MODE=""
+            echo "Mode: rerun all jobs"
           fi
 
           for RUN_ID in $RUNS; do
             if [ -n "${TARGET_WORKFLOW:-}" ]; then
               WORKFLOW_NAME=$(gh run view "$RUN_ID" --json name -q .name)
               if [ "$WORKFLOW_NAME" != "$TARGET_WORKFLOW" ]; then
+                echo "Skipping '${WORKFLOW_NAME}' (not '${TARGET_WORKFLOW}')"
                 continue
               fi
             fi
