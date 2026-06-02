@@ -1,0 +1,21 @@
+name: Dummy Test
+
+on:
+  pull_request:
+
+jobs:
+  always-pass:
+    name: always-pass
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pass
+        run: echo "This job always passes"
+
+  always-fail:
+    name: always-fail
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail
+        run: |
+          echo "This job always fails"
+          exit 1

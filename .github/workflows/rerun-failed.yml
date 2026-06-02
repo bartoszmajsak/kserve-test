@@ -1,0 +1,39 @@
+name: Re-Run Failed PR Jobs
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  rerun_failed_jobs:
+    name: rerun_failed_jobs
+    if: >-
+      github.event.issue.pull_request != '' &&
+      contains(github.event.comment.body, '/rerun-failed') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'COLLABORATOR' ||
+       github.event.comment.author_association == 'CONTRIBUTOR' ||
+       github.event.comment.author_association == 'MEMBER')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rerun only failed jobs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.issue.number }}"
+          HEAD_SHA=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json headRefOid -q .headRefOid)
+
+          # Find workflow runs for this PR's head SHA that have failed
+          FAILED_RUNS=$(gh api "repos/${{ github.repository }}/actions/runs?head_sha=${HEAD_SHA}&status=failure" \
+            --jq '.workflow_runs[].id')
+
+          if [ -z "$FAILED_RUNS" ]; then
+            echo "No failed workflow runs found for PR #${PR_NUMBER} (SHA: ${HEAD_SHA})"
+            exit 0
+          fi
+
+          for RUN_ID in $FAILED_RUNS; do
+            WORKFLOW_NAME=$(gh run view "$RUN_ID" --repo "${{ github.repository }}" --json name -q .name)
+            echo "Rerunning failed jobs in '${WORKFLOW_NAME}' (run ${RUN_ID})..."
+            gh run rerun "$RUN_ID" --repo "${{ github.repository }}" --failed || echo "Failed to rerun ${RUN_ID}"
+          done
