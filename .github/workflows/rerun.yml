@@ -53,7 +53,7 @@ jobs:
             MODE="--failed"
             echo "Mode: rerun failed jobs only"
           elif echo "$COMMENT_BODY" | grep -q '/rerun-workflow'; then
-            TARGET_WORKFLOW=$(echo "$COMMENT_BODY" | sed -n 's|.*/rerun-workflow \(.*\)|\1|p' | sed 's/[[:space:]]*$//')
+            TARGET_WORKFLOW=$(echo "$COMMENT_BODY" | sed -n 's|.*/rerun-workflow "\([^"]*\)".*|\1|p; t; s|.*/rerun-workflow \(.*\)|\1|p' | sed 's/[[:space:]]*$//')
             MODE=""
             echo "Mode: rerun workflow '${TARGET_WORKFLOW}'"
           else
