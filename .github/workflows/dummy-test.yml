@@ -11,11 +11,20 @@ jobs:
       - name: Pass
         run: echo "This job always passes"
 
-  always-fail:
-    name: always-fail
+  fail-one:
+    name: fail-one
     runs-on: ubuntu-latest
     steps:
       - name: Fail
         run: |
-          echo "This job always fails"
+          echo "First failing job"
+          exit 1
+
+  fail-two:
+    name: fail-two
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail
+        run: |
+          echo "Second failing job"
           exit 1

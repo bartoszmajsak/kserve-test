@@ -1,0 +1,14 @@
+name: Dummy Lint
+
+on:
+  pull_request:
+
+jobs:
+  lint-fail:
+    name: lint-fail
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail
+        run: |
+          echo "Lint check failed"
+          exit 1
