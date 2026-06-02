@@ -15,7 +15,7 @@ jobs:
       github.event.issue.pull_request != '' &&
       (contains(github.event.comment.body, '/rerun-all') ||
        contains(github.event.comment.body, '/rerun-failed') ||
-       contains(github.event.comment.body, '/rerun-workflow')) &&
+       contains(github.event.comment.body, '/rerun-workflow ')) &&
       (github.event.comment.author_association == 'OWNER' ||
        github.event.comment.author_association == 'COLLABORATOR' ||
        github.event.comment.author_association == 'CONTRIBUTOR' ||
