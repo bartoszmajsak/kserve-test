@@ -36,7 +36,7 @@ permissions:
   contents: read
 
 env:
-  E2E_IMAGE_CACHE: ghcr.io/${{ github.repository_owner }}/kserve-e2e-images
+  E2E_IMAGE_CACHE: ghcr.io/${{ github.repository_owner }}/kserve-e2e-images-verify # sandbox: fresh package
 
 jobs:
   test:
