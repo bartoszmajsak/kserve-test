@@ -161,4 +161,4 @@ jobs:
       - name: Delete stale cache versions
         env:
           GH_TOKEN: ${{ github.token }}
-        run: ./test/scripts/gh-actions/image-cache.sh prune
+        run: ./test/scripts/gh-actions/image-cache.sh prune 0 # sandbox: exercise deletion now

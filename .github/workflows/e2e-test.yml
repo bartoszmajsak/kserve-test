@@ -511,6 +511,7 @@ jobs:
           name: test-results-predictor-${{ matrix.install-method }}
 
   test-transformer-explainer-mms:
+    if: false # sandbox: measuring image builds only
     runs-on: ubuntu-latest
     timeout-minutes: 50
     needs:
@@ -627,6 +628,7 @@ jobs:
           name: test-results-transformer-explainer-mms-${{ matrix.install-method }}
 
   test-graph:
+    if: false # sandbox: measuring image builds only
     runs-on: ubuntu-latest
     timeout-minutes: 60
     needs:
@@ -732,6 +734,7 @@ jobs:
           name: test-results-graph-${{ matrix.install-method }}
 
   test-path-based-routing:
+    if: false # sandbox: measuring image builds only
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs:
@@ -859,6 +862,7 @@ jobs:
           name: test-results-path-based-routing-${{ matrix.install-method }}
 
   test-qpext:
+    if: false # sandbox: measuring image builds only
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: [detect-changes, kserve-image-build, predictor-runtime-build]
@@ -953,6 +957,7 @@ jobs:
           ./test/scripts/gh-actions/status-check.sh
 
   test-with-helm:
+    if: false # sandbox: measuring image builds only
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [kserve-image-build]
@@ -1022,6 +1027,7 @@ jobs:
           name: test-results-helm
 
   test-raw:
+    if: false # sandbox: measuring image builds only
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -1183,6 +1189,7 @@ jobs:
           name: test-results-raw-${{ matrix.network-layer }}-${{ matrix.install-method }}
 
   test-autoscaling:
+    if: false # sandbox: measuring image builds only
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs:
@@ -1293,6 +1300,7 @@ jobs:
           name: test-results-autoscaling-${{ matrix.install-method }}
 
   test-kourier:
+    if: false # sandbox: measuring image builds only
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs:
@@ -1409,6 +1417,7 @@ jobs:
           name: test-results-kourier-${{ matrix.install-method }}
 
   test-llm:
+    if: false # sandbox: measuring image builds only
     runs-on: cncf-ubuntu-16-64-x86
     timeout-minutes: 65
     needs: [detect-changes, kserve-image-build, predictor-runtime-build]
@@ -1493,6 +1502,7 @@ jobs:
           name: test-results-llm-${{ matrix.install-method }}
 
   test-huggingface-server-vllm:
+    if: false # sandbox: measuring image builds only
     runs-on: cncf-ubuntu-16-64-x86
     timeout-minutes: 80
     needs: [detect-changes, kserve-image-build, predictor-runtime-build]
@@ -1578,6 +1588,7 @@ jobs:
           name: test-results-vllm-${{ matrix.install-method }}
 
   test-vllm-runtime:
+    if: false # sandbox: measuring image builds only
     runs-on: cncf-ubuntu-16-64-x86
     timeout-minutes: 25
     needs: [detect-changes, kserve-image-build, predictor-runtime-build]
