@@ -165,3 +165,4 @@ def test_namespace(test_namespace_session):
     if not skip_resource_deletion():
         cleanup_isvcs(test_namespace_session)
         wait_pods_terminated(get_core_api(), test_namespace_session)
+# sandbox: image-neutral change
